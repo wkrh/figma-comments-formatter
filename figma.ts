@@ -1,7 +1,3 @@
-export interface Data {
-  comments: IComment[];
-}
-
 export interface User {
   handle: string;
   img_url: string;
@@ -37,50 +33,30 @@ export class Comment {
       .sort((a, b) => (a.created_at > b.created_at ? 1 : -1))
       .map(c => new Comment(c, this.allComments));
   }
-
-  short() {
-    return {
-      created_at: this.created_at,
-      user: this.user.handle,
-      message: this.message,
-    };
-  }
 }
 
-export class CommentsHandler {
-  constructor(public data: Data) {}
+export class Comments {
+  constructor(public data: IComment[]) {}
 
   getRoots() {
-    return this.data.comments
+    return this.data
       .filter(c => !!c.order_id)
-      .map(c => new Comment(c, this.data.comments));
+      .map(c => new Comment(c, this.data));
   }
 
-  toTree() {
-    return this.getRoots().map(c => ({
-      num: c.order_id,
-      thread: [c.short(), ...c.children().map(cc => cc.short())],
-    }));
-  }
-
-  toArray() {
+  getSorted() {
     return this.getRoots().flatMap(c => {
-      const resolved = c.resolved_at ? '済' : '';
       const num = c.order_id;
       return [
         {
-          mark: `▼ ${num} ${resolved}`,
-          ...c.short(),
           num,
-          resolved,
           isRoot: true,
+          ...c,
         },
         ...c.children().map(cc => ({
-          mark: '',
-          ...cc.short(),
           num,
-          resolved,
           isRoot: false,
+          ...cc,
         })),
       ];
     });
