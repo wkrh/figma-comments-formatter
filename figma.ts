@@ -31,21 +31,6 @@ export class Comment {
     Object.assign(this, props);
   }
 
-  child() {
-    const e = this.allComments.find(c => c.parent_id === this.id);
-    return e ? new Comment(e, this.allComments) : null;
-  }
-
-  // children() {
-  // const out: Comment[] = [];
-  // let node = this.child();
-  // while (node) {
-  //   out.push(node);
-  //   node = node.child();
-  // }
-  // return out;
-  // }
-
   children() {
     return this.allComments
       .filter(c => c.parent_id === this.id)
