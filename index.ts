@@ -7,4 +7,5 @@ const data: Data = JSON.parse(
 
 const h = new CommentsHandler(data);
 
-console.log(JSON.stringify(h.tree(), null, 2));
+// console.log(JSON.stringify(h.toTree(), null, 2));
+console.log(JSON.stringify(h.toArray(), null, 2));

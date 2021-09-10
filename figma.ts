@@ -36,21 +36,28 @@ export class Comment {
     return e ? new Comment(e, this.allComments) : null;
   }
 
+  // children() {
+  // const out: Comment[] = [];
+  // let node = this.child();
+  // while (node) {
+  //   out.push(node);
+  //   node = node.child();
+  // }
+  // return out;
+  // }
+
   children() {
-    const out: Comment[] = [];
-    let node = this.child();
-    while (node) {
-      out.push(node);
-      node = node.child();
-    }
-    return out;
+    return this.allComments
+      .filter(c => c.parent_id === this.id)
+      .sort((a, b) => (a.created_at > b.created_at ? 1 : -1))
+      .map(c => new Comment(c, this.allComments));
   }
 
   short() {
     return {
+      created_at: this.created_at,
       user: this.user.handle,
       message: this.message,
-      created_at: this.created_at,
     };
   }
 }
@@ -58,16 +65,39 @@ export class Comment {
 export class CommentsHandler {
   constructor(public data: Data) {}
 
-  roots() {
+  getRoots() {
     return this.data.comments
       .filter(c => !!c.order_id)
       .map(c => new Comment(c, this.data.comments));
   }
 
-  tree() {
-    return this.roots().map(c => ({
+  toTree() {
+    return this.getRoots().map(c => ({
       num: c.order_id,
       thread: [c.short(), ...c.children().map(cc => cc.short())],
     }));
+  }
+
+  toArray() {
+    return this.getRoots().flatMap(c => {
+      const resolved = c.resolved_at ? '済' : '';
+      const num = c.order_id;
+      return [
+        {
+          mark: `▼ ${num} ${resolved}`,
+          ...c.short(),
+          num,
+          resolved,
+          isRoot: true,
+        },
+        ...c.children().map(cc => ({
+          mark: '',
+          ...cc.short(),
+          num,
+          resolved,
+          isRoot: false,
+        })),
+      ];
+    });
   }
 }
