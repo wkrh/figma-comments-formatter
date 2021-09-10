@@ -32,21 +32,26 @@ export class Comment {
   }
 
   child() {
-    return this.allComments.find(c => c.parent_id === c.id);
+    const e = this.allComments.find(c => c.parent_id === this.id);
+    return e ? new Comment(e, this.allComments) : null;
   }
 
   children() {
-    const out: IComment[] = [];
+    const out: Comment[] = [];
     let node = this.child();
     while (node) {
       out.push(node);
-      node = this.create(node).child();
+      node = node.child();
     }
     return out;
   }
 
-  create(c: IComment) {
-    return new Comment(c, this.allComments);
+  short() {
+    return {
+      user: this.user.handle,
+      message: this.message,
+      created_at: this.created_at,
+    };
   }
 }
 
@@ -54,13 +59,15 @@ export class CommentsHandler {
   constructor(public data: Data) {}
 
   roots() {
-    return this.data.comments.filter(c => !!c.order_id);
+    return this.data.comments
+      .filter(c => !!c.order_id)
+      .map(c => new Comment(c, this.data.comments));
   }
 
   tree() {
     return this.roots().map(c => ({
-      ...c,
-      children: new Comment(c, this.data.comments).children(),
+      num: c.order_id,
+      thread: [c.short(), ...c.children().map(cc => cc.short())],
     }));
   }
 }

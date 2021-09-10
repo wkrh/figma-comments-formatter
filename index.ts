@@ -1,12 +1,10 @@
 import * as fs from 'fs';
-import { CommentsHandler } from './figma';
+import { Data, CommentsHandler } from './figma';
 
-console.log(
-  JSON.stringify(
-    new CommentsHandler(
-      JSON.parse(fs.readlinkSync(`${__dirname}/data.json`))
-    ).tree(),
-    null,
-    2
-  )
+const data: Data = JSON.parse(
+  fs.readFileSync(`${__dirname}/data.json`).toString()
 );
+
+const h = new CommentsHandler(data);
+
+console.log(JSON.stringify(h.tree(), null, 2));
